@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public class EnemyScript : MonoBehaviour
+public class PlayerDamage : MonoBehaviour
 {
     private Animator Player;
     public float enemyHealth = 10f;

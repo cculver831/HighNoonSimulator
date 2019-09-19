@@ -4,29 +4,32 @@ using UnityEngine;
 
 public class RevolverDamage : MonoBehaviour
 {
+
+    //This script uses raycasting to detect and damage objects
     //public ParticleSystem muzzleFlash;
     public int Damage = 5;
     public float fireRate = .25f;
     public float weaponRange = 50f;
-    private LineRenderer laserLine;
     private float nextFire;
+    public int ammo = 6;
+
 
     public RaycastHit Shot;
     private Camera fpsCam;
     private WaitForSeconds shotDuration = new WaitForSeconds(0.7f);
     private void Start()
     {
-        laserLine = GetComponent<LineRenderer>();
         fpsCam = GetComponentInParent<Camera>();
     }
     // Update is called once per frame
     void Update()
     {
 
-        if (Input.GetButtonDown("Fire1") && Time.time > nextFire)
+        if (Input.GetButtonDown("Fire1") && Time.time > nextFire && ammo > 0)
         {
             Shoot();
             nextFire = Time.time + fireRate;
+            ammo --;
 
         }
     }
@@ -34,7 +37,6 @@ public class RevolverDamage : MonoBehaviour
 
     void Shoot()
     {
-       // muzzleFlash.Play();
         RaycastHit Hit;
         if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out Hit))
         {
