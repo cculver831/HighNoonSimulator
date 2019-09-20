@@ -5,11 +5,29 @@ using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-    public Button Play;
-    // Start is called before the first frame update
-    void Start()
+    public static bool PlayerSelect = false;
+    public GameObject PlayerS;
+    public GameObject optionsUI;
+    public GameObject Main_Menu;
+    public static bool MainM = true;
+    public AnimationClip Camera;
+    public GameObject Cam;
+    private void Start()
     {
-        
+        Cam = GameObject.Find("Main Camera");
+        Camera = gameObject.GetComponent<Animator>();
+    }
+    public void Play()
+    {
+
+        PlayerSelect = true;
+        PlayerS.SetActive(true);
+        Main_Menu.SetActive(false);
+        MainM = false;
+        //Camera.Play();
+
+
+
     }
 
     // Update is called once per frame
