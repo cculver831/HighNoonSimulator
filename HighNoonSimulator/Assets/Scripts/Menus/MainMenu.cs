@@ -10,22 +10,19 @@ public class MainMenu : MonoBehaviour
     public GameObject optionsUI;
     public GameObject Main_Menu;
     public static bool MainM = true;
-    public AnimationClip Camera;
+    private Animator Camera;
     public GameObject Cam;
     private void Start()
     {
         Cam = GameObject.Find("Main Camera");
-        Camera = gameObject.GetComponent<Animator>();
+        Camera = Cam.GetComponent<Animator>();
     }
     public void Play()
     {
-
-        PlayerSelect = true;
+        Camera.Play("Camera_Pan");
+        StartCoroutine(ChangeMenu());
+        print(Time.time);
         PlayerS.SetActive(true);
-        Main_Menu.SetActive(false);
-        MainM = false;
-        //Camera.Play();
-
 
 
     }
@@ -33,6 +30,13 @@ public class MainMenu : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
+    }
+    IEnumerator ChangeMenu()
+    {
+        Main_Menu.SetActive(false);
+        print(Time.time);
+        yield return new WaitForSeconds(2);
         
     }
 }
