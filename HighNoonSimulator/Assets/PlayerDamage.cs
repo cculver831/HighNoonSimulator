@@ -30,8 +30,8 @@ public class PlayerDamage : MonoBehaviour
             Cam.gameObject.SetActive(false); ;
             DeathCam.gameObject.SetActive(true);
             StartCoroutine(Spawning());
-            
-            
+            enemyHealth = 10;
+
         }
         else
         {

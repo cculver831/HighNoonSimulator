@@ -10,13 +10,17 @@ public class Respawn : MonoBehaviour
     public GameObject Spawn4;
     public GameObject Player_n;
     public int spawnPoints = 4;
+    public Vector3 Spawnpoint;
 
     public void respawn(GameObject player)
     {
+        Spawnpoint = Spawn2.transform.position;
         Debug.Log("Changing Spawn location");
+        player.transform.position = Spawn2.transform.position;
         int spawnPoint = Random.Range(0, spawnPoints);
         Player_n = player;
-        player.transform.position = Spawn2.transform.position;
+       
+
         //switch (spawnPoint)
         //    {
 
