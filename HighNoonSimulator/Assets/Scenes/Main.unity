@@ -32095,6 +32095,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1112723786616099986, guid: 4402e7e1ddce83a448b78f8749064c8c,
+        type: 3}
+      propertyPath: viewIdField
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1112723786616099986, guid: 4402e7e1ddce83a448b78f8749064c8c,
+        type: 3}
+      propertyPath: instantiationId
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2819397131771356955, guid: 4402e7e1ddce83a448b78f8749064c8c,
         type: 3}
       propertyPath: m_Name
@@ -34993,6 +35003,7 @@ MonoBehaviour:
   Spawn4: {fileID: 817072367}
   Player_n: {fileID: 0}
   spawnPoints: 4
+  Spawnpoint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1267177245
 PrefabInstance:
   m_ObjectHideFlags: 0

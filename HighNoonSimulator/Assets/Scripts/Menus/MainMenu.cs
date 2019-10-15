@@ -21,22 +21,17 @@ public class MainMenu : MonoBehaviour
     {
         Camera.Play("Camera_Pan");
         StartCoroutine(ChangeMenu());
-        print(Time.time);
-        PlayerS.SetActive(true);
-
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
+        Main_Menu.SetActive(false);
         
+        StopCoroutine(ChangeMenu());
+
     }
+
     IEnumerator ChangeMenu()
     {
-        Main_Menu.SetActive(false);
-        print(Time.time);
-        yield return new WaitForSeconds(2);
-        
+  
+        yield return new WaitForSeconds(3);
+        PlayerS.SetActive(true);
+
     }
 }
