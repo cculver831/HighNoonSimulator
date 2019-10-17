@@ -4,15 +4,14 @@ using UnityEngine;
 
 public class LobbyCanvas : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField]
+    private RoomLayoutGroup _roomLayoutGroup;
+    private RoomLayoutGroup RoomLayoutGroup
     {
-        
+        get { return _roomLayoutGroup; }
     }
-
-    // Update is called once per frame
-    void Update()
+    public void OnClickJoinRoom(string roomName)
     {
-        
+
     }
 }
