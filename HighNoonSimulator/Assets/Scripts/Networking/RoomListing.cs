@@ -10,11 +10,32 @@ public class RoomListing : MonoBehaviour
     {
         get { return _roomNameText; }
     }
+
+    public string RoomName { get; private set; }
     public bool Updated{ get; set; }
     // Start is called before the first frame update
     private void Start()
     {
-        
+        GameObject lobbyCanvasObj = MainCanvasManager.Instance.LobbyCanvas.gameObject;
+
+        if (lobbyCanvasObj == null)
+        {
+            return;
+        }
+        LobbyCanvas LobbyCanvas = lobbyCanvasObj.GetComponent<LobbyCanvas>();
+
+        Button button = GetComponent<Button>();
+        button.onClick.AddListener(() => LobbyCanvas.OnClickJoinRoom(RoomNameText.text));
     }
 
+    private void OnDestroy()
+    {
+        Button button = GetComponent<Button>();
+        button.onClick.RemoveAllListeners();
+    }
+    public void SetRoomNameText(string text)
+    {
+        RoomName = text;
+        RoomNameText.text = RoomName;
+    }
 }

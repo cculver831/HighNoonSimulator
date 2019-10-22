@@ -53,6 +53,10 @@ public class PlayerMovement : MonoBehaviour
             Player.SetBool("Running", true);
             Player.SetBool("Idle", false);
         }
+        if(horizInput != 0)
+        {
+            //Player.SetBool()
+        }
     }
 
     private void JumpInput()
