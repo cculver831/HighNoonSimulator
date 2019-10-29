@@ -13,6 +13,7 @@ public class CreateRoom : MonoBehaviour
     public void OnClick_CreateRoom()
     {
         RoomOptions roomOptions = new RoomOptions() { isVisible = true, IsOpen = true, MaxPlayers = 6 };
+
         if (PhotonNetwork.CreateRoom(RoomName.text, roomOptions, TypedLobby.Default))
         {
             Debug.Log("Create Room Succsefully Sent");
@@ -27,7 +28,7 @@ public class CreateRoom : MonoBehaviour
         Debug.Log("Create Room failed: " + codeAndMessage[1]);
     }
 
-    private void OnCreateRoom()
+    private void OnCreatedRoom()
     {
         Debug.Log("Room Created Successfully!");
     }
