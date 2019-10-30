@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class CreateRoom : MonoBehaviour
 {
+    public GameObject CurrentRoom;
     [SerializeField]
     private Text _roomName;
     private Text RoomName
@@ -31,5 +32,7 @@ public class CreateRoom : MonoBehaviour
     private void OnCreatedRoom()
     {
         Debug.Log("Room Created Successfully!");
+        
+        //CurrentRoom.SetActive(true);
     }
 }
