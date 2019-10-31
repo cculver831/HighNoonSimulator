@@ -34,6 +34,10 @@ public class PlayerLayoutGroup : MonoBehaviour
         }
     }
 
+    private void OnPhotonPlayerConnected(PhotonPlayer photonPlayer)
+    {
+        PlayerJoinedRoom(photonPlayer);
+    }
     //Called by photon when a player leaves the room.
     private void OnPhotonPlayerDisconnected(PhotonPlayer photonPlayer)
     {
@@ -66,5 +70,18 @@ public class PlayerLayoutGroup : MonoBehaviour
             Destroy(PlayerListings[index].gameObject);
             PlayerListings.RemoveAt(index);
         }
+    }
+    public void OnClickRoomState()
+    {
+        if (PhotonNetwork.isMasterClient)
+        {
+            PhotonNetwork.room.IsOpen = !PhotonNetwork.room.IsOpen;
+            PhotonNetwork.room.IsVisible = PhotonNetwork.room.IsOpen;
+        }
+        else
+        {
+            return;
+        }
+      
     }
 }
