@@ -12,6 +12,8 @@ public class RoomLayoutGroup : MonoBehaviour
     }
 
     private List<RoomListing> _roomListingButtons = new List<RoomListing>();
+    private RoomListing roomListing;
+
     private List<RoomListing> RoomListingButtons
     {
         get { return _roomListingButtons; }
@@ -38,7 +40,7 @@ public class RoomLayoutGroup : MonoBehaviour
 
         if (index == -1)
         {
-            if(room.IsVisible && room.PlayerCount < room.MaxPlayers)
+            if(room.IsVisible && (room.PlayerCount < room.MaxPlayers))
             {
                 GameObject roomListingObj = Instantiate(RoomListingPrefab);
                 roomListingObj.transform.SetParent(transform, false);
@@ -52,6 +54,7 @@ public class RoomLayoutGroup : MonoBehaviour
         // If we do find a Room that exists, we show it
         if(index != -1)
         {
+
             RoomListing roomListing = RoomListingButtons[index];
             roomListing.SetRoomNameText(room.Name);
             roomListing.Updated = true;
@@ -63,6 +66,7 @@ public class RoomLayoutGroup : MonoBehaviour
 
         foreach(RoomListing roomListing in RoomListingButtons)
         {
+            
             if(!roomListing.Updated)
             {
                 removeRooms.Add(roomListing);
@@ -81,4 +85,6 @@ public class RoomLayoutGroup : MonoBehaviour
             Destroy(roomListing);
         }
     }
+
+ 
 }
