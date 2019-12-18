@@ -1,6 +1,6 @@
-﻿// ----------------------------------------------------------------------------
+﻿	// ----------------------------------------------------------------------------
 // <copyright file="PhotonTransformView.cs" company="Exit Games GmbH">
-//   PhotonNetwork Framework for Unity - Copyright (C) 2018 Exit Games GmbH
+//   PhotonNetwork Framework for Unity - Copyright (C) 2016 Exit Games GmbH
 // </copyright>
 // <summary>
 //   Component to synchronize Transforms via PUN PhotonView.
@@ -8,130 +8,207 @@
 // <author>developer@exitgames.com</author>
 // ----------------------------------------------------------------------------
 
+using UnityEngine;
 
-namespace Photon.Pun
+/// <summary>
+/// This class helps you to synchronize position, rotation and scale
+/// of a GameObject. It also gives you many different options to make
+/// the synchronized values appear smooth, even when the data is only
+/// send a couple of times per second.
+/// Simply add the component to your GameObject and make sure that
+/// the PhotonTransformView is added to the list of observed components
+/// </summary>
+[RequireComponent(typeof(PhotonView))]
+[AddComponentMenu("Photon Networking/Photon Transform View")]
+public class PhotonTransformView : MonoBehaviour, IPunObservable
 {
-    using UnityEngine;
+    //Since this component is very complex, we seperated it into multiple objects.
+    //The PositionModel, RotationModel and ScaleMode store the data you are able to
+    //configure in the inspector while the control objects below are actually moving
+    //the object and calculating all the inter- and extrapolation
 
+    [SerializeField]
+	public  PhotonTransformViewPositionModel m_PositionModel = new PhotonTransformViewPositionModel();
 
-    [AddComponentMenu("Photon Networking/Photon Transform View")]
-    [HelpURL("https://doc.photonengine.com/en-us/pun/v2/gameplay/synchronization-and-state")]
-    [RequireComponent(typeof(PhotonView))]
-    public class PhotonTransformView : MonoBehaviour, IPunObservable
+    [SerializeField]
+	public PhotonTransformViewRotationModel m_RotationModel = new PhotonTransformViewRotationModel();
+
+    [SerializeField]
+	public PhotonTransformViewScaleModel m_ScaleModel = new PhotonTransformViewScaleModel();
+
+	PhotonTransformViewPositionControl m_PositionControl;
+	PhotonTransformViewRotationControl m_RotationControl;
+	PhotonTransformViewScaleControl m_ScaleControl;
+
+    PhotonView m_PhotonView;
+
+    bool m_ReceivedNetworkUpdate = false;
+
+	/// <summary>
+	/// Flag to skip initial data when Object is instantiated and rely on the first deserialized data instead.
+	/// </summary>
+	bool m_firstTake = false;
+
+    void Awake()
     {
-        private float m_Distance;
-        private float m_Angle;
+        this.m_PhotonView = GetComponent<PhotonView>();
 
-        private PhotonView m_PhotonView;
+        this.m_PositionControl = new PhotonTransformViewPositionControl(this.m_PositionModel);
+        this.m_RotationControl = new PhotonTransformViewRotationControl(this.m_RotationModel);
+        this.m_ScaleControl = new PhotonTransformViewScaleControl(this.m_ScaleModel);
+    }
 
-        private Vector3 m_Direction;
-        private Vector3 m_NetworkPosition;
-        private Vector3 m_StoredPosition;
+	void OnEnable()
+	{
+		m_firstTake = true;
+	}
 
-        private Quaternion m_NetworkRotation;
-
-        public bool m_SynchronizePosition = true;
-        public bool m_SynchronizeRotation = true;
-        public bool m_SynchronizeScale = false;
-
-        bool m_firstTake = false;
-
-        public void Awake()
+    void Update()
+    {
+        if (this.m_PhotonView == null || this.m_PhotonView.isMine == true || PhotonNetwork.connected == false)
         {
-            m_PhotonView = GetComponent<PhotonView>();
-
-            m_StoredPosition = transform.position;
-            m_NetworkPosition = Vector3.zero;
-
-            m_NetworkRotation = Quaternion.identity;
+            return;
         }
 
-        void OnEnable()
+        this.UpdatePosition();
+        this.UpdateRotation();
+        this.UpdateScale();
+    }
+
+    void UpdatePosition()
+    {
+        if (this.m_PositionModel.SynchronizeEnabled == false || this.m_ReceivedNetworkUpdate == false)
         {
-            m_firstTake = true;
+            return;
         }
 
-        public void Update()
+       	transform.localPosition = this.m_PositionControl.UpdatePosition(transform.localPosition);
+    }
+
+    void UpdateRotation()
+    {
+        if (this.m_RotationModel.SynchronizeEnabled == false || this.m_ReceivedNetworkUpdate == false)
         {
-            if (!this.m_PhotonView.IsMine)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, this.m_NetworkPosition, this.m_Distance * (1.0f / PhotonNetwork.SerializationRate));
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, this.m_NetworkRotation, this.m_Angle * (1.0f / PhotonNetwork.SerializationRate));
-            }
+            return;
         }
 
-        public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+        transform.localRotation = this.m_RotationControl.GetRotation(transform.localRotation);
+    }
+
+    void UpdateScale()
+    {
+        if (this.m_ScaleModel.SynchronizeEnabled == false || this.m_ReceivedNetworkUpdate == false)
         {
-            if (stream.IsWriting)
-            {
-                if (this.m_SynchronizePosition)
-                {
-                    this.m_Direction = transform.position - this.m_StoredPosition;
-                    this.m_StoredPosition = transform.position;
+            return;
+        }
 
-                    stream.SendNext(transform.position);
-                    stream.SendNext(this.m_Direction);
-                }
+        transform.localScale = this.m_ScaleControl.GetScale(transform.localScale);
+    }
 
-                if (this.m_SynchronizeRotation)
-                {
-                    stream.SendNext(transform.rotation);
-                }
+    /// <summary>
+    /// These values are synchronized to the remote objects if the interpolation mode
+    /// or the extrapolation mode SynchronizeValues is used. Your movement script should pass on
+    /// the current speed (in units/second) and turning speed (in angles/second) so the remote
+    /// object can use them to predict the objects movement.
+    /// </summary>
+    /// <param name="speed">The current movement vector of the object in units/second.</param>
+    /// <param name="turnSpeed">The current turn speed of the object in angles/second.</param>
+    public void SetSynchronizedValues(Vector3 speed, float turnSpeed)
+    {
+        this.m_PositionControl.SetSynchronizedValues(speed, turnSpeed);
+    }
 
-                if (this.m_SynchronizeScale)
-                {
-                    stream.SendNext(transform.localScale);
-                }
-            }
-            else
-            {
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        this.m_PositionControl.OnPhotonSerializeView(transform.localPosition, stream, info);
+        this.m_RotationControl.OnPhotonSerializeView(transform.localRotation, stream, info);
+        this.m_ScaleControl.OnPhotonSerializeView(transform.localScale, stream, info);
 
+        if (this.m_PhotonView.isMine == false && this.m_PositionModel.DrawErrorGizmo == true)
+        {
+            this.DoDrawEstimatedPositionError();
+        }
 
-                if (this.m_SynchronizePosition)
-                {
-                    this.m_NetworkPosition = (Vector3)stream.ReceiveNext();
-                    this.m_Direction = (Vector3)stream.ReceiveNext();
+        if (stream.isReading == true)
+        {
+            this.m_ReceivedNetworkUpdate = true;
 
-                    if (m_firstTake)
-                    {
-                        transform.position = this.m_NetworkPosition;
-                        this.m_Distance = 0f;
-                    }
-                    else
-                    {
-                        float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
-                        this.m_NetworkPosition += this.m_Direction * lag;
-                        this.m_Distance = Vector3.Distance(transform.position, this.m_NetworkPosition);
-                    }
+			// force latest data to avoid initial drifts when player is instantiated.
+			if (m_firstTake)
+			{
+				m_firstTake = false;
 
-                   
-                }
+				if (this.m_PositionModel.SynchronizeEnabled)
+				{
+					this.transform.localPosition = this.m_PositionControl.GetNetworkPosition();
+				}
 
-                if (this.m_SynchronizeRotation)
-                {
-                    this.m_NetworkRotation = (Quaternion)stream.ReceiveNext();
+				if (this.m_RotationModel.SynchronizeEnabled)
+				{
+					this.transform.localRotation = this.m_RotationControl.GetNetworkRotation();
+				}
 
-                    if (m_firstTake)
-                    {
-                        this.m_Angle = 0f;
-                        transform.rotation = this.m_NetworkRotation;
-                    }
-                    else
-                    {
-                        this.m_Angle = Quaternion.Angle(transform.rotation, this.m_NetworkRotation);
-                    }
-                }
+				if (this.m_ScaleModel.SynchronizeEnabled)
+				{
+					this.transform.localScale = this.m_ScaleControl.GetNetworkScale();
+				}
 
-                if (this.m_SynchronizeScale)
-                {
-                    transform.localScale = (Vector3)stream.ReceiveNext();
-                }
+			}
 
-                if (m_firstTake)
-                {
-                    m_firstTake = false;
-                }
-            }
         }
     }
+
+    //void OnDrawGizmos()
+    //{
+    //    if( Application.isPlaying == false || m_PhotonView == null || m_PhotonView.isMine == true || PhotonNetwork.connected == false )
+    //    {
+    //        return;
+    //    }
+
+    //    DoDrawNetworkPositionGizmo();
+    //    DoDrawExtrapolatedPositionGizmo();
+    //}
+
+    void DoDrawEstimatedPositionError()
+    {
+        Vector3 targetPosition = this.m_PositionControl.GetNetworkPosition();
+
+		// we are synchronizing the localPosition, so we need to add the parent position for a proper positioning.
+		if (transform.parent != null)
+		{
+			targetPosition = transform.parent.position + targetPosition ;
+		}
+
+		Debug.DrawLine(targetPosition, transform.position, Color.red, 2f);
+        Debug.DrawLine(transform.position, transform.position + Vector3.up, Color.green, 2f);
+		Debug.DrawLine(targetPosition , targetPosition + Vector3.up, Color.red, 2f);
+    }
+
+    //void DoDrawNetworkPositionGizmo()
+    //{
+    //    if( m_PositionModel.DrawNetworkGizmo == false || m_PositionControl == null )
+    //    {
+    //        return;
+    //    }
+
+    //    ExitGames.Client.GUI.GizmoTypeDrawer.Draw( m_PositionControl.GetNetworkPosition(),
+    //                                               m_PositionModel.NetworkGizmoType,
+    //                                               m_PositionModel.NetworkGizmoColor,
+    //                                               m_PositionModel.NetworkGizmoSize );
+    //}
+
+    //void DoDrawExtrapolatedPositionGizmo()
+    //{
+    //    if( m_PositionModel.DrawExtrapolatedGizmo == false ||
+    //        m_PositionModel.ExtrapolateOption == PhotonTransformViewPositionModel.ExtrapolateOptions.Disabled ||
+    //        m_PositionControl == null )
+    //    {
+    //        return;
+    //    }
+
+    //    ExitGames.Client.GUI.GizmoTypeDrawer.Draw( m_PositionControl.GetNetworkPosition() + m_PositionControl.GetExtrapolatedPositionOffset(),
+    //                                               m_PositionModel.ExtrapolatedGizmoType,
+    //                                               m_PositionModel.ExtrapolatedGizmoColor,
+    //                                               m_PositionModel.ExtrapolatedGizmoSize );
+    //}
 }

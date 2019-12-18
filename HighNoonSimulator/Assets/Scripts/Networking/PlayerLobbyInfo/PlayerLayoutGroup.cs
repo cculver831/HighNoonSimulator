@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerLayoutGroup : MonoBehaviour
 {
@@ -76,11 +75,8 @@ public class PlayerLayoutGroup : MonoBehaviour
     {
         if (PhotonNetwork.isMasterClient)
         {
-        
-            Debug.Log("Altering Lobby");
             PhotonNetwork.room.IsOpen = !PhotonNetwork.room.IsOpen;
-            PhotonNetwork.room.IsVisible = !PhotonNetwork.room.IsOpen;
-            
+            PhotonNetwork.room.IsVisible = PhotonNetwork.room.IsOpen;
         }
         else
         {
